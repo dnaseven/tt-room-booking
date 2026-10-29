@@ -1,6 +1,6 @@
 import { BookingErrorCode, DomainError } from './booking.error'
 import type { BookingRepository } from './booking.repository'
-import { CreateBookingSchema, type Booking, type CreateBooking } from './booking.schema'
+import { CreateBookingSchema, type Booking, type CreateBooking, type UpdateBooking } from './booking.schema'
 
 export type BookingDeps = {
   repository: BookingRepository
@@ -67,4 +67,8 @@ export const createBooking = async (deps: BookingDeps, input: CreateBooking): Pr
   }
 
   return deps.repository.create(parsed.data)
+}
+
+export const updateBooking = async (_deps: BookingDeps, _id: string, _patch: UpdateBooking): Promise<Booking> => {
+  throw new Error('not implemented')
 }

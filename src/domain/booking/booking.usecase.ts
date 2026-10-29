@@ -113,3 +113,7 @@ export const deleteBooking = async (deps: BookingDeps, id: string): Promise<void
 
   await deps.repository.remove(id)
 }
+
+export const listBookings = async (_deps: BookingDeps, _date: string): Promise<Booking[]> => {
+  throw new Error('not implemented')
+}

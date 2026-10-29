@@ -16,6 +16,13 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* Aliases */
+    "paths": {
+      "@client/*": ["./src/client/*"],
+      "@server/*": ["./src/server/*"],
+      "@domain/*": ["./src/domain/*"]
+    },
+
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,

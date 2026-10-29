@@ -2,6 +2,7 @@ import { BookingErrorCode, DomainError } from './booking.error'
 import type { BookingRepository } from './booking.repository'
 import {
   CreateBookingSchema,
+  DateSchema,
   UpdateBookingSchema,
   type Booking,
   type CreateBooking,
@@ -114,6 +115,13 @@ export const deleteBooking = async (deps: BookingDeps, id: string): Promise<void
   await deps.repository.remove(id)
 }
 
-export const listBookings = async (_deps: BookingDeps, _date: string): Promise<Booking[]> => {
-  throw new Error('not implemented')
+export const listBookings = async (deps: BookingDeps, date: string): Promise<Booking[]> => {
+  const parsed = DateSchema.safeParse(date)
+  if (!parsed.success) {
+    throw new DomainError(BookingErrorCode.InvalidInput, parsed.error.message)
+  }
+
+  const bookings = await deps.repository.listByDate(parsed.data)
+
+  return [...bookings].sort((a, b) => toMinutes(a.start) - toMinutes(b.start))
 }

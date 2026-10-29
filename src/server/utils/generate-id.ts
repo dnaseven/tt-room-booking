@@ -1,3 +1,1 @@
-export const generateId = (): string => {
-  throw new Error('not implemented')
-}
+export const generateId = (): string => crypto.randomUUID()

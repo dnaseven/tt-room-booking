@@ -105,6 +105,11 @@ export const updateBooking = async (deps: BookingDeps, id: string, patch: Update
   return deps.repository.update(id, parsed.data)
 }
 
-export const deleteBooking = async (_deps: BookingDeps, _id: string): Promise<void> => {
-  throw new Error('not implemented')
+export const deleteBooking = async (deps: BookingDeps, id: string): Promise<void> => {
+  const existing = await deps.repository.getById(id)
+  if (!existing) {
+    throw new DomainError(BookingErrorCode.BookingNotFound)
+  }
+
+  await deps.repository.remove(id)
 }

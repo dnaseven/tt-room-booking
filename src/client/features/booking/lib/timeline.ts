@@ -2,15 +2,10 @@ import { MIN_DURATION, WORK_END, WORK_START, isInPast, timeToMinutes } from '@do
 import type { Booking } from '@domain/booking/booking.schema'
 import type { BlockPosition } from '@client/ui/models/booking-view-model'
 import type { SlotState, TimelineSlot } from '@client/ui/models/timeline-slot'
+import { minutesToTime } from './time'
 
 const SLOT_MINUTES = MIN_DURATION
 const WORK_DAY_MINUTES = WORK_END - WORK_START
-
-const toTime = (minutes: number) => {
-  const hours = String(Math.floor(minutes / 60)).padStart(2, '0')
-  const rest = String(minutes % 60).padStart(2, '0')
-  return `${hours}:${rest}`
-}
 
 export const buildSlots = (date: string, bookings: Booking[], now: Date): TimelineSlot[] => {
   const sameDay = bookings
@@ -26,7 +21,7 @@ export const buildSlots = (date: string, bookings: Booking[], now: Date): Timeli
     if (isBooked) state = 'booked'
     else if (isInPast(date, start, now)) state = 'past'
 
-    slots.push({ start: toTime(start), end: toTime(end), state })
+    slots.push({ start: minutesToTime(start), end: minutesToTime(end), state })
   }
 
   return slots

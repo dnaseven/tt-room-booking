@@ -1,6 +1,12 @@
 import { BookingErrorCode, DomainError } from './booking.error'
 import type { BookingRepository } from './booking.repository'
-import { CreateBookingSchema, type Booking, type CreateBooking, type UpdateBooking } from './booking.schema'
+import {
+  CreateBookingSchema,
+  UpdateBookingSchema,
+  type Booking,
+  type CreateBooking,
+  type UpdateBooking,
+} from './booking.schema'
 
 export type BookingDeps = {
   repository: BookingRepository
@@ -29,13 +35,13 @@ const isInPast = (date: string, start: number, now: Date) => {
   return start < now.getHours() * 60 + now.getMinutes()
 }
 
-export const createBooking = async (deps: BookingDeps, input: CreateBooking): Promise<Booking> => {
-  const parsed = CreateBookingSchema.safeParse(input)
-  if (!parsed.success) {
-    throw new DomainError(BookingErrorCode.InvalidInput, parsed.error.message)
-  }
+type RuleOptions = {
+  checkPast: boolean
+  excludeId?: string
+}
 
-  const { date, start, end } = parsed.data
+const assertRules = async (deps: BookingDeps, booking: CreateBooking, options: RuleOptions) => {
+  const { date, start, end } = booking
   const startMinutes = toMinutes(start)
   const endMinutes = toMinutes(end)
 
@@ -54,21 +60,47 @@ export const createBooking = async (deps: BookingDeps, input: CreateBooking): Pr
     throw new DomainError(BookingErrorCode.DurationTooLong)
   }
 
-  if (isInPast(date, startMinutes, deps.now())) {
+  if (options.checkPast && isInPast(date, startMinutes, deps.now())) {
     throw new DomainError(BookingErrorCode.PastTime)
   }
 
   const sameDay = await deps.repository.listByDate(date)
   const hasConflict = sameDay.some(
-    (booking) => startMinutes < toMinutes(booking.end) && toMinutes(booking.start) < endMinutes,
+    (other) =>
+      other.id !== options.excludeId && startMinutes < toMinutes(other.end) && toMinutes(other.start) < endMinutes,
   )
   if (hasConflict) {
     throw new DomainError(BookingErrorCode.BookingConflict)
   }
+}
+
+export const createBooking = async (deps: BookingDeps, input: CreateBooking): Promise<Booking> => {
+  const parsed = CreateBookingSchema.safeParse(input)
+  if (!parsed.success) {
+    throw new DomainError(BookingErrorCode.InvalidInput, parsed.error.message)
+  }
+
+  await assertRules(deps, parsed.data, { checkPast: true })
 
   return deps.repository.create(parsed.data)
 }
 
-export const updateBooking = async (_deps: BookingDeps, _id: string, _patch: UpdateBooking): Promise<Booking> => {
-  throw new Error('not implemented')
+export const updateBooking = async (deps: BookingDeps, id: string, patch: UpdateBooking): Promise<Booking> => {
+  const parsed = UpdateBookingSchema.safeParse(patch)
+  if (!parsed.success) {
+    throw new DomainError(BookingErrorCode.InvalidInput, parsed.error.message)
+  }
+
+  const existing = await deps.repository.getById(id)
+  if (!existing) {
+    throw new DomainError(BookingErrorCode.BookingNotFound)
+  }
+
+  const merged = { ...existing, ...parsed.data }
+  const timeChanged =
+    merged.date !== existing.date || merged.start !== existing.start || merged.end !== existing.end
+
+  await assertRules(deps, merged, { checkPast: timeChanged, excludeId: id })
+
+  return deps.repository.update(id, parsed.data)
 }

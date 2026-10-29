@@ -1,9 +1,9 @@
 import { BookingErrorCode } from './booking.error'
 import type { Booking, CreateBooking } from './booking.schema'
 
-const WORK_START = 9 * 60
-const WORK_END = 18 * 60
-const MIN_DURATION = 30
+export const WORK_START = 9 * 60
+export const WORK_END = 18 * 60
+export const MIN_DURATION = 30
 const MAX_DURATION = 2 * 60
 
 export const timeToMinutes = (time: string) => {
@@ -17,7 +17,7 @@ const toDateString = (date: Date) => {
   return `${date.getFullYear()}-${month}-${day}`
 }
 
-const isInPast = (date: string, start: number, now: Date) => {
+export const isInPast = (date: string, start: number, now: Date) => {
   const today = toDateString(now)
   if (date !== today) return date < today
   return start < now.getHours() * 60 + now.getMinutes()

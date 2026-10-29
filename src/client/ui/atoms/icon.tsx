@@ -1,7 +1,9 @@
-import { CircleAlert, LoaderCircle, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CircleAlert, LoaderCircle, Trash2 } from 'lucide-react'
 
 const ICONS = {
   alert: CircleAlert,
+  next: ChevronRight,
+  previous: ChevronLeft,
   spinner: LoaderCircle,
   trash: Trash2,
 }

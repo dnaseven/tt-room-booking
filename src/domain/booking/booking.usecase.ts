@@ -104,3 +104,7 @@ export const updateBooking = async (deps: BookingDeps, id: string, patch: Update
 
   return deps.repository.update(id, parsed.data)
 }
+
+export const deleteBooking = async (_deps: BookingDeps, _id: string): Promise<void> => {
+  throw new Error('not implemented')
+}
